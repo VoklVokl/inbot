@@ -102,6 +102,7 @@ class Main(object):
 
         if not stable:
             logger.info("Saving new stable configuration...")
+            distutils.dir_util.remove_tree(self.stable_config_dir.name)
             distutils.dir_util.copy_tree(self.commands_dir.name, self.stable_config_dir.name)
             logger.info("Done saving new stable configuration.")
 
