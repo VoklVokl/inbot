@@ -2,7 +2,7 @@ from copy import copy
 from pathlib import Path
 from typing import List, Optional
 
-from telegram import Update
+from telegram import Update, Message
 from telegram.ext import CommandHandler, CallbackContext
 
 from lib.basic import HelpInfo, ExtHandler, PageDescription
@@ -23,12 +23,19 @@ class ShowPageCommand(ExtHandler, CommandHandler):
 
         super().__init__(self.command_string, self.create_page)
 
+    def is_visible_in_help(self, help_message: Message):
+        # we show only top-level pages
+        return len(self.super_commands) == 0
+
+    def get_subcommands(self, update: Update, context: CallbackContext):
+        return self.subcommands
+
     def create_page(self, update: Update, context: CallbackContext):
         text = copy(self.page_description.text)
 
         # TODO: make pattern for possible commands injection
-        if len(self.subcommands) > 0:
-            list_items = ["/" + info.command_string.replace("_", "\\_") + f" : {info.description}" for info in self.subcommands]
+        if len(self.get_subcommands(update, context)) > 0:
+            list_items = ["/" + info.command_string.replace("_", "\\_") + f" : {info.description}" for info in self.get_subcommands(update, context)]
 
             if text.find(COMMANDS_LIST) < 0:
                 text += f"\n{COMMANDS_LIST}"
